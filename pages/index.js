@@ -8,7 +8,7 @@ export default function Home() {
   const [mode, setMode] = useState("serious");
 
   return (
-    <div className="min-h-screen bg-yellow-50 flex flex-col items-center justify-center p-6 text-center">
+    <div className="min-h-screen text-black bg-yellow-50 flex flex-col items-center justify-center p-6 text-center">
       <h1 className="text-4xl font-bold mb-4 text-orange-600">
         🎭 FunQuizFool
       </h1>

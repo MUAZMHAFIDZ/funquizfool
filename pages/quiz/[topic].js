@@ -64,7 +64,7 @@ export default function QuizPage() {
   };
 
   return (
-    <div className="min-h-screen bg-yellow-50 p-6 flex flex-col items-center justify-center text-center">
+    <div className="min-h-screen text-black bg-yellow-50 p-6 flex flex-col items-center justify-center text-center">
       <h1 className="text-3xl font-bold text-orange-600 mb-2">
         🎭 FunQuizFool
       </h1>
