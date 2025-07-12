@@ -8,31 +8,38 @@ export default function QuizPage() {
   const mode = router.query.mode || "serious";
 
   const TOTAL_QUESTIONS = 5;
+  const [questions, setQuestions] = useState([]);
   const [questionNumber, setQuestionNumber] = useState(1);
-  const [questionData, setQuestionData] = useState(null);
   const [selected, setSelected] = useState("");
   const [result, setResult] = useState(null);
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
   const [disableOptions, setDisableOptions] = useState(false);
 
-  useEffect(() => {
-    if (!topic) return;
-    loadQuestionWithDelay();
-  }, [topic, mode, questionNumber]);
+  const currentQuestion = questions[questionNumber - 1];
 
-  const loadQuestionWithDelay = async () => {
+  useEffect(() => {
+    if (topic) loadAllQuestions();
+  }, [topic, mode]);
+
+  const loadAllQuestions = async () => {
     setLoading(true);
-    setQuestionData(null);
     setResult(null);
     setSelected("");
     setDisableOptions(false);
 
     setTimeout(async () => {
-      const res = await axios.get(`/api/generate?topic=${topic}&mode=${mode}`);
-      setQuestionData(res.data);
-      setLoading(false);
-    }, 8000);
+      try {
+        const res = await axios.get(
+          `/api/generate?topic=${topic}&mode=${mode}`
+        );
+        setQuestions(res.data.questions);
+      } catch (err) {
+        alert("Failed to load questions");
+      } finally {
+        setLoading(false);
+      }
+    }, 3000);
   };
 
   const handleAnswer = async (choice) => {
@@ -40,7 +47,11 @@ export default function QuizPage() {
     setSelected(choice);
     setDisableOptions(true);
 
-    const res = await axios.post("/api/answer", { userAnswer: choice });
+    const res = await axios.post("/api/answer", {
+      userAnswer: choice,
+      index: questionNumber - 1,
+    });
+
     setResult(res.data.result);
     if (res.data.result === "correct") {
       setScore((prev) => prev + 1);
@@ -54,6 +65,9 @@ export default function QuizPage() {
       );
     } else {
       setQuestionNumber((prev) => prev + 1);
+      setResult(null);
+      setSelected("");
+      setDisableOptions(false);
     }
   };
 
@@ -73,20 +87,20 @@ export default function QuizPage() {
         / {TOTAL_QUESTIONS}
       </p>
 
-      {loading ? (
+      {loading || !currentQuestion ? (
         <div className="bg-white p-6 rounded shadow-lg max-w-md w-full animate-pulse flex flex-col items-center">
           <div className="text-4xl mb-4">🧠🤪📚</div>
           <p className="text-gray-600 font-semibold text-lg">
-            Thinking of a crazy question...
+            Thinking of crazy questions...
           </p>
           <p className="text-sm text-gray-400 mt-2">
-            Please wait 8 seconds while AI generates magic ✨
+            Please wait 3 seconds while AI generates magic ✨
           </p>
         </div>
       ) : (
         <div className="bg-white p-6 rounded shadow max-w-xl w-full">
           <h2 className="mb-4 text-lg font-semibold">
-            Q{questionNumber}: {questionData.question}
+            Q{questionNumber}: {currentQuestion.question}
           </h2>
 
           <div className="grid grid-cols-1 gap-3">
@@ -103,7 +117,7 @@ export default function QuizPage() {
                     : "bg-white hover:bg-yellow-100"
                 }`}
               >
-                {key}) {questionData.options[key]}
+                {key}) {currentQuestion.options[key]}
               </button>
             ))}
           </div>
